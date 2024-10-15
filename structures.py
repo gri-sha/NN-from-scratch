@@ -4,14 +4,15 @@ import numpy as np
 class NeuralNetwork:
     VALID_ACT = {"ReLU", "Sigmoid"} 
 
-    def __init__(self, network_shape: list[int], init_weights_mult=0.01, learning_rate=0.01, act_type="ReLU"):
-       
-        self.shape = network_shape
-        self.init_weigths_mult = init_weights_mult
+    def __init__(self, shape: tuple[int], init_weights_mult=0.01, learning_rate=0.01, act_type="ReLU"):     
+        self.shape = shape
+        self.init_weights_mult = init_weights_mult
         self.learning_rate = learning_rate
 
         if act_type in self.VALID_ACT:
             self.act_type = act_type
+        else:
+            raise ValueError("Invalid activation type")
 
         self.layers = [Layer(num_neurons, network=self) for num_neurons in self.shape]
         self.connect()
@@ -94,7 +95,7 @@ class Layer:
     def initialize(self):
         if self.prev_layer is not None:
             input_size = self.prev_layer.num_neurons
-            self.weights = np.random.randn(input_size, self.num_neurons) * self.network.init_weigths_mult # np.random.randn() return vaulues in [-1, 1] interval
+            self.weights = np.random.randn(input_size, self.num_neurons) * self.network.init_weights_mult # np.random.randn() return vaulues in [-1, 1] interval
             self.biases = np.zeros((1, self.num_neurons))
 
     def forward(self, inputs):
@@ -117,6 +118,7 @@ class Layer:
         output_error_prev = np.dot(dz, self.weights.T) # .T <=> transposed
 
         # Update weights and biases
+        # print(self.inputs.T.shape, dz.shape)
         self.weights -= self.network.learning_rate * np.dot(self.inputs.T, dz)
         self.biases -= self.network.learning_rate * np.sum(dz, axis=0, keepdims=True)
 
@@ -140,10 +142,10 @@ class Layer:
 
 
 if __name__ == "__main__":
-    IN = 5
-    OUT = 5
+    IN = 786
+    OUT = 10
 
-    nn = NeuralNetwork([IN, 7, 6, 7, OUT], act_type="Sigmoid")  # 3 input neurons, 5 hidden neurons, 2 output neurons
+    nn = NeuralNetwork((IN, 16, 16, OUT), act_type="ReLU")  # 3 input neurons, 5 hidden neurons, 2 output neurons
     print(nn)
 
     input_data = np.random.rand(1, IN)
